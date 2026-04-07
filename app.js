@@ -38,7 +38,6 @@ const fileFilter = (req, file, cb) => {
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'));
 
 app.use(bodyParser.json());
-app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,7 +48,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(auth);
 
 app.put('/post-image', (req, res, next) => {
@@ -59,11 +58,12 @@ app.put('/post-image', (req, res, next) => {
   if (!req.file) {
     return res.status(200).json({ message: 'No file provided!' });
   }
-  if(req.body.oldPath){
+  if (req.body.oldPath) {
     clearImage(req.body.oldPath);
   }
-  return res.status(201).json({message: 'File stored', filePath: req.file.path })
-})
+  const filePath = req.file.path.replace(/\\/g, '/');
+  return res.status(201).json({ message: 'File stored', filePath: filePath });
+});
 
 app.get('/graphiql', (req, res) => {
   res.type('html');
